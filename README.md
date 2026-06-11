@@ -46,9 +46,9 @@ Build your checker until it produces output that matches the Peter Parker expect
 | Resident | Notes |
 |---|---|
 | Alice Nguyen | 3 days |
-| Robert Singh | 3 days — on anticoagulants, X-ray involved |
-| Edna Kowalski | 3 days — Day 3 is fully complete, no flags expected |
-| Thomas Brennan | 3 days — on Warfarin |
+| Robert Singh | 3 days |
+| Edna Kowalski | 3 days |
+| Thomas Brennan | 3 days |
 
 Run your checker on each resident's input sheet and fill in the corresponding `Your Output` sheet with the flags your checker produces. The output sheets are pre-formatted — same columns as the sample. Add rows as needed.
 
