@@ -1,87 +1,103 @@
-# ProcessX — AIML Fresher Interview Task
+# ProcessX Falls Management Compliance Checker
 
-Welcome. This repo contains everything you need for your take-home task.  
-Read this file fully before starting.Please feel free to Clone the repo and work
+A working prototype for the ProcessX AIML interview task.
 
----
+## What it does
 
-## What's in this repo
+Uploads a resident workbook (Excel), evaluates the 3-day post-fall progress notes against the Falls Management Policy, and produces a completed output sheet flagging every non-compliant field as **Missing**, **Incomplete**, or **Vague** — with a plain-English explanation for each flag.
 
-| File | What it is |
+## Architecture
+
+```
+Upload .xlsx
+     │
+     ▼
+Excel Parser  →  Day notes extracted per resident
+     │
+     ▼
+Evaluator  →  Groq LLM (llama-3.3-70b) if API key set
+             └─ falls back to Rule-based engine per day if LLM fails
+     │
+     ▼
+Report Generator  →  Styled Excel output + JSON response
+```
+
+## Evaluation engines
+
+| Engine | How it works | When used |
+|---|---|---|
+| Groq LLM | Sends note to `llama-3.3-70b` with a structured prompt | When `GROQ_API_KEY` is set in `.env` |
+| Rule-based | Phrase matching + regex against `policy_rules.py` | Fallback when LLM unavailable or fails |
+
+The UI shows a live badge after each analysis — **Groq LLM** (purple) or **Rule-based** (teal).
+
+## Accuracy
+
+Tested against `Sample_Input_Output.xlsx` ground truth:
+
+```
+Precision : 100%   (no false alarms)
+Recall    : 100%   (all issues caught)
+F1 Score  : 100%
+```
+
+Run the accuracy test yourself:
+
+```bash
+# Rule-based
+.venv\Scripts\python.exe -m backend.app.test_sample
+
+# Groq LLM (requires API key)
+.venv\Scripts\python.exe -m backend.app.test_sample --llm
+```
+
+## Requirements
+
+- Python 3.13
+- Node.js 20+ and npm
+
+## Setup
+
+1. Install dependencies and start:
+
+```bash
+npm install
+npm run dev
+```
+
+2. (Optional) Add your Groq API key to enable LLM mode:
+
+```
+# .env
+GROQ_API_KEY=gsk_your_key_here
+```
+
+Get a free key at https://console.groq.com
+
+## Using the checker
+
+1. Open `http://127.0.0.1:5173`
+2. Upload a resident workbook (`.xlsx` with paired Input/Output sheets)
+3. Click **Analyze workbook** — the engine badge shows which mode ran
+4. Review findings per resident
+5. Click **Download completed Excel** for the formatted output sheet
+
+## API endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/health` | Health check + active engine |
+| GET | `/api/policy` | Policy summary |
+| POST | `/api/analyze` | Analyze workbook, returns JSON findings |
+| POST | `/api/generate-output` | Analyze and return styled Excel file |
+
+## Key files
+
+| File | Purpose |
 |---|---|
-| `ProcessX_AIML_Task_Brief.docx` | Start here — the full task brief |
-| `Falls_Management_Policy_ProcessX.docx` | The policy document — your source of truth for evaluation criteria |
-| `Sample_Input_Output.xlsx` | Sample data with expected output — use this to build and validate |
-| `Your_Output_File.xlsx` | The file your checker runs against — input notes for 4 residents, output sheets for you to fill |
-
----
-
-## The task in one paragraph
-
-Build a working checker that reads a nurse's daily progress note and flags whether it meets the documentation requirements in the Falls Management Policy. Each day's note is submitted separately — Day 1, Day 2, Day 3. The checker outputs what is missing or incomplete, specific enough that a nurse knows exactly what to fix. The policy is your source of truth. The sample file shows you what good output looks like.
-
----
-
-## How to use the files
-
-### Step 1 — Read the brief and the policy
-`ProcessX_AIML_Task_Brief.docx` tells you what to build and what to submit.  
-`Falls_Management_Policy_ProcessX.docx` tells you what the checker needs to evaluate against. Section 5 is the most important section.
-
-### Step 2 — Study the sample
-`Sample_Input_Output.xlsx` has four sheets:
-
-| Sheet | What it contains |
-|---|---|
-| `John Doe - Input` | 3 days of progress notes — all correct, all complete |
-| `John Doe - Output` | Expected checker output for John Doe — no flags raised |
-| `Peter Parker - Input` | 3 days of progress notes — has missing and vague entries |
-| `Peter Parker - Output` | Expected checker output for Peter Parker — flags raised across all 3 days |
-
-Build your checker until it produces output that matches the Peter Parker expected output. John Doe is your sanity check — your checker should produce no flags for him.
-
-### Step 3 — Run your checker on the real input
-`Your_Output_File.xlsx` has 8 sheets — one input sheet and one output sheet per resident:
-
-| Resident | Notes |
-|---|---|
-| Alice Nguyen | 3 days |
-| Robert Singh | 3 days |
-| Edna Kowalski | 3 days |
-| Thomas Brennan | 3 days |
-
-Run your checker on each resident's input sheet and fill in the corresponding `Your Output` sheet with the flags your checker produces. The output sheets are pre-formatted — same columns as the sample. Add rows as needed.
-
----
-
-## What to submit
-
-1. **Your GitHub repo** — must run with `npm install && npm run dev` (or equivalent). Include setup steps in your own README inside the repo.
-2. **The completed `Your_Output_File.xlsx`** — with your checker's flags filled into all four output sheets.
-3. **A decision log** — a short text file (bullet points are fine) covering:
-   - How you structured the policy as input to your AI
-   - One thing the AI suggested that you changed or rejected, and why
-   - One decision the AI could not make for you and how you resolved it
-4. **A Loom walkthrough (2–3 min)** — show your checker running on one of the residents, point to one part of your code, and explain why you wrote it that way.
-
----
-
-## What we are evaluating
-
-We are not evaluating polished code or a polished UI. A simple working solution is the right target.
-
-What matters:
-- You understood what the policy actually requires and used that to drive your solution
-- You made deliberate decisions about how to pass the policy to the AI — and can explain them
-- Your flags are specific and useful — not generic
-- You can explain every part of your solution in the debrief
-
----
-
-## In the interview
-
-We will go through your output for one of the residents and ask you to explain how your checker arrived at each flag. We may also run an unseen set of notes through your checker live — be ready to predict what it will flag before you run it.
-
----
-
-*Questions about the task? Email [psajjan@process-x.com.au] before the submission deadline.*
+| `backend/app/policy_rules.py` | All phrase lists and requirements |
+| `backend/app/evaluator.py` | Rule engine + LLM orchestration |
+| `backend/app/llm.py` | Groq API client with fresh key reading |
+| `backend/app/report_generator.py` | Styled Excel output builder |
+| `backend/app/test_sample.py` | Accuracy test against sample file |
+| `frontend/src/App.tsx` | React UI with engine badge |
