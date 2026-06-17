@@ -69,14 +69,22 @@ npm install
 npm run dev
 ```
 
-2. (Optional) Add your Groq API key to enable LLM mode:
+2. **Enable LLM mode (recommended)** — create a `.env` file in the project root:
+
+```bash
+# copy the example file
+copy .env.example .env
+```
+
+Then open `.env` and replace the placeholder with your real Groq API key:
 
 ```
-# .env
-GROQ_API_KEY=gsk_your_key_here
+GROQ_API_KEY=gsk_your_actual_key_here
 ```
 
-Get a free key at https://console.groq.com
+Get a free Groq API key at https://console.groq.com (takes 1 minute, no credit card needed).
+
+> Without the `.env` file the app still runs fully in **rule-based mode** (100% accurate on the sample data). The `.env` file is gitignored and will never be committed.
 
 ## Using the checker
 
