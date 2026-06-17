@@ -2,6 +2,10 @@
 
 A working prototype for the ProcessX AIML interview task.
 
+## Loom Walkthrough
+
+https://www.loom.com/share/2eb31ba2e9cb438a9edb40bfef4d70c6
+
 ## What it does
 
 Uploads a resident workbook (Excel), evaluates the 3-day post-fall progress notes against the Falls Management Policy, and produces a completed output sheet flagging every non-compliant field as **Missing**, **Incomplete**, or **Vague** — with a plain-English explanation for each flag.
